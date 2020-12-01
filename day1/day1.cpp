@@ -13,16 +13,18 @@ int main()
         nums.push_back(x);
     }
     
-    /*
     for(auto x : nums) {
         for (auto y : nums) {
             if (x + y == 2020) {
                 cout << x << " * " << y << " = " << x * y << endl;
-                return 0;
+                goto nextloop;
             }
         }
     }
-    */
+    cout << "No two-way sum to 2020!" << endl;
+    return 1;
+
+    nextloop:
     
     for(auto x : nums) {
         for (auto y : nums) {
@@ -35,5 +37,6 @@ int main()
         }
     }
     
+    cout << "No three-way sum to 2020!" << endl;
     return 1;
 }
