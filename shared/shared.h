@@ -2,6 +2,7 @@
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <regex>
@@ -52,4 +53,14 @@ std::vector<std::string> split(const std::string& input, const std::string& rege
         first{ input.begin(), input.end(), re, -1 },
         last;
     return { first, last };
+}
+
+template<class C>
+void Dump(const C& c) {
+    bool f = true;
+    for (auto& x : c) {
+        if (!f) std::cout << ",";
+        f = false;
+        std::cout << x;
+    }
 }
