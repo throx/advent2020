@@ -7,8 +7,10 @@
 
 using namespace std;
 
+// Because they are all size 10!
 const int SZ = 10;
 
+// Reverse a string
 string reverse(const string& in) {
     string out(in.length(), ' ');
     for (int i = 0; i < in.length(); ++i) {
@@ -17,6 +19,7 @@ string reverse(const string& in) {
     return out;
 }
 
+// Rotate a square counterclockwise
 void RotateCCW(vector<string>& data) {
     cout << endl;
     int sz = data.size();
@@ -29,6 +32,7 @@ void RotateCCW(vector<string>& data) {
     data.swap(newdata);
 }
 
+// Flip a square top to bottom
 void Flip(vector<string>& data) {
     int sz = data.size();
     vector<string> newdata(sz, string(sz, 0));
@@ -38,9 +42,12 @@ void Flip(vector<string>& data) {
     data.swap(newdata);
 }
 
+// Structure representing a Tile of info
+// Contains a tile number, and some data
 struct Tile {
     Tile(int num, const vector<string>& data) : num(num), m_data(data) {}
 
+    // Return the 4 edges as strings
     vector<string> Edges() {
         vector<string> result;
         result.push_back(m_data[0]);
@@ -58,10 +65,12 @@ struct Tile {
         return result;
     }
 
+    // Get the bottom edge
     string GetBottom() {
         return m_data[SZ - 1];
     }
 
+    // Get the right edge
     string GetRight() {
         string r(SZ, ' ');
         for (int i = 0; i < SZ; ++i) {
@@ -70,6 +79,8 @@ struct Tile {
         return r;
     }
 
+    // Rotate/Flip until the top matches the string
+    // specified.  If it can't be done, BOOM!
     void MakeTop(string top) {
         for (int i = 0; i < 4; ++i) {
             if (m_data[0] == top) return;
@@ -83,10 +94,12 @@ struct Tile {
         throw "Bad";
     }
 
+    // Rotate tile Counterclockwise
     void RotateCCW() {
         ::RotateCCW(m_data);
     }
 
+    // Flip a tile top to bottom
     void Flip() {
         ::Flip(m_data);
     }
@@ -95,10 +108,12 @@ struct Tile {
     vector<string> m_data;
 };
 
+// THE MAIN FUNCTION!!!
 int main()
 {
     vector<Tile> tiles;
 
+    // Read in all the tiles
     while (!cin.eof()) {
         string s;
         getline(cin, s);
@@ -113,6 +128,9 @@ int main()
         getline(cin, s);
     }
 
+    // Create a map of each edge to the tiles that contain it.
+    // Reversed edges are dealt with by using the minimum of an
+    // edge and its reversed representation.
     map<string, set<int>> edges;
     for (int i = 0; i < tiles.size(); ++i) {
         auto e = tiles[i].Edges();
@@ -122,6 +140,7 @@ int main()
         }
     }
 
+    // File the tiles with edges seen only once.
     map<int, int> candidates;
     for (auto& e : edges) {
         if (e.second.size() == 1) {
@@ -130,6 +149,8 @@ int main()
         }
     }
 
+    // The corner candidates are the tiles which have
+    // two of their edges seen only once.
     __int64 p = 1;
     int a_can = 0;
     for (auto& c : candidates) {
@@ -139,17 +160,21 @@ int main()
         }
     }
 
+    // Part 1 done
     cout << "Product = " << p << endl;
 
     // Now I have to stitch the tiles together...
     // ... crap
 
+    // Create a 2D array (using vector) for the tiles, as we find them
     int mapsize = sqrt(tiles.size());
     vector<vector<int>> tilemap(mapsize, vector<int>(mapsize, 0));
 
+    // Start with one of the corner candidates, from above.
     tilemap[0][0] = a_can;
 
-    // Rotate TL tile to line up matches
+    // Rotate TL tile to line up matches on the right and bottom by
+    // rotating until they have the edges with 2 tiles.
     while (true) {
         tiles[a_can].RotateCCW();
 
@@ -164,12 +189,14 @@ int main()
         break;
     }
 
-    // Fill in the top row
+    // Fill in the top row by matching each right edge in turn
     for (int x = 1; x < mapsize; ++x) {
         int num = tilemap[0][x - 1];
         string edge = tiles[num].GetRight();
         string edge_min = min(edge, reverse(edge));
         auto& matches = edges[edge_min];
+
+        // Have to find the match that isn't the one already placed
         int next = 0;
         for (auto& m : matches) {
             if (m != num) {
@@ -178,11 +205,15 @@ int main()
             }
         }
         tilemap[0][x] = next;
+
+        // Make the matched edge the top (reverse, because tiles match that way)
         tiles[next].MakeTop(reverse(edge));
+
+        // Rotate it CCW, so the top is now on the left.
         tiles[next].RotateCCW();
     }
 
-    // Fill down
+    // Fill down all columns, using same logic as above
     for (int y = 1; y < mapsize; ++y) {
         for (int x = 0; x < mapsize; ++x) {
             int num = tilemap[y - 1][x];
@@ -201,7 +232,7 @@ int main()
         }
     }
 
-    // Dump tiles
+    // Dump tiles ids, to show our work
     for (auto& r : tilemap) {
         for (auto& i : r) {
             cout << tiles[i].num << ' ';
@@ -209,6 +240,7 @@ int main()
         cout << endl;
     }
 
+    // Dump the contents of the tiles
     for (int y = 0; y < mapsize; ++y) {
         for (int y1 = 0; y1 < SZ; ++y1) {
             for (int x = 0; x < mapsize; ++x) {
@@ -238,9 +270,11 @@ int main()
         }
     }
 
+    // Dump the actual map now, because I like dumping things
     for (auto& s : seamap) cout << s << endl;
     cout << endl;
 
+    // A SEA MONSTER.  OMG!
     const vector<string> monster({
         "                  # "s,
         "#    ##    ##    ###"s,
@@ -250,12 +284,18 @@ int main()
     const int mx = monster[0].length();
     const int my = monster.size();
 
+    // Two flips
     for (int flip = 0; flip < 2; ++flip) {
+
+        // Four rotations to check every permutation of a map.
         for (int rot = 0; rot < 4; ++rot) {
+
+            // Loop through current permutation
             for (int y = 0; y <= msz - my; ++y) {
                 for (int x = 0; x <= msz - mx; ++x) {
-                    bool found = true;
 
+                    // Look for monster pattern
+                    bool found = true;
                     for (int y1 = 0; y1 < my && found; ++y1) {
                         for (int x1 = 0; x1 < mx && found; ++x1) {
                             if (monster[y1][x1] == '#' && seamap[y + y1][x + x1] == '.') {
@@ -281,9 +321,11 @@ int main()
         ::Flip(seamap);
     }
 
+    // Show where we found the monsters
     for (auto& s : seamap) cout << s << endl;
     cout << endl;
 
+    // Count the bits that aren't monsters
     int sum = 0;
     for (auto& s : seamap) {
         for (auto& c : s) {
